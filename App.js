@@ -1283,7 +1283,7 @@ const Header = () => {
     return (
         <div className = "header">
             <img className = "logo" src = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRww1kL82fFNMCh0ZvfzyU-CIxh6x4W9-XP0LC52gULej7XqjI9Y2haUUg&s=10" alt = "logo" />
-            <div className = "title">Tanu's Kitchen</div>
+            <div className = "title">👩🏻‍🍳 Tanu's Kitchen ❤️</div>
             <div className = "nav-items">
                 <ul>
                     <li>Home</li>
@@ -1305,7 +1305,7 @@ const RestaurantCards = (props) => {
             <img src = {"https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_660/" + cloudinaryImageId } alt = "reslogo" />
             <div className = "res-info">
             <h3>{name}</h3>
-            <h4>{avgRating}</h4>
+            <h4>⭐️ {avgRating}</h4>
             <h4>{resData.info.sla.deliveryTime} minutes</h4>
             <h4>{costForTwo}</h4>
             </div>
