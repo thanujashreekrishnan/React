@@ -1,18 +1,35 @@
 import RestaurantCards from "./RestaurantCards";
-import { restaurantList } from "./constants/mockdata";
-import { useState } from "react";
+import { useState,useEffect } from "react";
+import Shimmer from "./Shimmer";
 const Body = () => {
 
-    const [filteredRestaurants, setFilteredRestaurants] = useState(restaurantList);
+    const [restaurantList, setRestaurantList] = useState([]);
+    const [filteredRestaurants, setFilteredRestaurants] = useState([]);
     const [searchText, setSearchText] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
 
-    return (
+
+    useEffect(()=>{fetchRestaurants()},[])
+
+    const fetchRestaurants = async() => {
+        const data =  await fetch("https://www.swiggy.com/dapi/restaurants/list/v5?lat=28.63270&lng=77.21980&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING");
+        const json = await data.json();
+        const restaurants =
+        json?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants;
+        setRestaurantList(restaurants);
+        setFilteredRestaurants(restaurants);
+        setIsLoading(false);
+    }
+    return restaurantList.length === 0 ?(
+        <Shimmer />
+    ):(
         <div className = "main-body">
             <div>
                 <input className = "search-container" type = "search" placeholder="Search for restaurants and foods" 
                 onChange={(event)=> {
-                    setSearchText(event.target.value);
-                    const filteredList = restaurantList.filter((res)=> res.info.name.toLowerCase().includes(searchText.toLowerCase()));
+                    const value = event.target.value;
+                    setSearchText(value);
+                    const filteredList = restaurantList.filter((res)=> res.info.name.toLowerCase().includes(value.toLowerCase()));
                     setFilteredRestaurants(filteredList);
                 }} />
             </div>
@@ -28,6 +45,6 @@ const Body = () => {
 
         </div>
     )
-}
+            }
 
 export default Body;

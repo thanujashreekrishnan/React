@@ -80,6 +80,8 @@ Named Export	Default Export	* as Import
 Multiple exports allowed	Only one default export	Imports all named exports as an object
 Imported using {}	Imported without {}	Imported using * as alias
 Name must match	Can be renamed	Access values using alias.property
+
+
 2. What is the importance of config.js (or constants.js) file?
 
 A config.js or constants.js file is used to store values that are reused throughout the application.
