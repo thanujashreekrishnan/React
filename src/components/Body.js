@@ -1,6 +1,7 @@
 import RestaurantCards from "./RestaurantCards";
 import { useState,useEffect } from "react";
 import Shimmer from "./Shimmer";
+import { Link } from "react-router-dom";
 const Body = () => {
 
     const [restaurantList, setRestaurantList] = useState([]);
@@ -12,7 +13,7 @@ const Body = () => {
     useEffect(()=>{fetchRestaurants()},[])
 
     const fetchRestaurants = async() => {
-        const data =  await fetch("https://www.swiggy.com/dapi/restaurants/list/v5?lat=28.63270&lng=77.21980&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING");
+        const data =  await fetch("https://www.swiggy.com/dapi/restaurants/list/v5?lat=13.0226054&lng=77.6477361&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING");
         const json = await data.json();
         const restaurants =
         json?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants;
@@ -20,7 +21,7 @@ const Body = () => {
         setFilteredRestaurants(restaurants);
         setIsLoading(false);
     }
-    return restaurantList.length === 0 ?(
+    return isLoading ?(
         <Shimmer />
     ):(
         <div className = "main-body">
@@ -34,12 +35,12 @@ const Body = () => {
                 }} />
             </div>
             <button className="filter-btn" onClick={()=>{
-                const filteredList = restaurantList.filter((res)=> res.info.avgRating > 4.5);
+                const filteredList = restaurantList.filter((res)=> res.info.avgRating > 4.0);
                 setFilteredRestaurants(filteredList);
             }}> Top Rated Restaurants</button>
             <div className = "restaurant-list">
              {filteredRestaurants.map((restaurant) => {
-                return <RestaurantCards key={restaurant.info.id} resData={restaurant} />
+                return (<Link key={restaurant.info.id} to = {"/restaurant/"+ restaurant.info.id}><RestaurantCards resData={restaurant} /></Link>)
              } )}
             </div>
 
