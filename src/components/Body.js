@@ -2,6 +2,7 @@ import RestaurantCards from "./RestaurantCards";
 import { useState,useEffect } from "react";
 import Shimmer from "./Shimmer";
 import { Link } from "react-router-dom";
+import useNetworkCheck from "../hooks/useNetworkCheck";
 const Body = () => {
 
     const [restaurantList, setRestaurantList] = useState([]);
@@ -20,6 +21,13 @@ const Body = () => {
         setRestaurantList(restaurants);
         setFilteredRestaurants(restaurants);
         setIsLoading(false);
+    }
+
+    if(!useNetworkCheck())
+    {
+        return(
+            <h1>🔴 Offline, please check your internet connection!!</h1>
+        )
     }
     return isLoading ?(
         <Shimmer />
