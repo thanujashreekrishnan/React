@@ -1,52 +1,27 @@
-import { useEffect, useState } from "react";
-import { API_URLs } from "./constants/urls";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
-import Shimmer from "./Shimmer";
+
 import { IMG_URLs } from "./constants/urls";
+import Shimmer from "./Shimmer";
 import Menulist from "./Menulist";
+import useRestaurantDetails from "../hooks/useRestaurantDetails";
 
-const { RESTURANT_DETAILS } = API_URLs;
 const { RESTO_DETAILS_IMG } = IMG_URLs;
-
 
 const RestaurantDetails = () => {
     const { resId } = useParams();
-    const [restaurantDetails, setRestaurantDetails] = useState([]);
-    const [menuSections, setMenuSections] = useState([]);
-    const [searchItems, setSearchItems] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        fetchRestaurantDetails();
-    }, [])
+    const {
+        restaurantDetails,
+        menuSections,
+        isLoading
+    } = useRestaurantDetails(resId);
 
-    const fetchRestaurantDetails = async () => {
-        const data = await fetch(RESTURANT_DETAILS + resId);
-        const json = await data.json();
-        const restaurantData = json?.data?.cards[2]?.card?.card || {};
-        setRestaurantDetails(restaurantData);
-        const menuData =
-            json?.data?.cards[5]
-                ?.groupedCard
-                ?.cardGroupMap
-                ?.REGULAR
-                ?.cards
-                ?.filter(
-                    (section) =>
-                        section?.card?.card?.["@type"] ===
-                        "type.googleapis.com/swiggy.presentation.food.v2.ItemCategory"
-                ) || [];
-
-        setMenuSections(menuData);
-        setSearchItems(menuData);
-        setIsLoading(false);
-    }
+    const [searchText, setSearchText] = useState("");
 
     if (isLoading || !restaurantDetails) {
         return <Shimmer />;
     }
-
-
 
     const {
         name,
@@ -58,10 +33,39 @@ const RestaurantDetails = () => {
         totalRatingsString
     } = restaurantDetails?.info || {};
 
+    const filteredSections = menuSections
+        .map((section) => {
+            const sectionData = section?.card?.card;
+
+            const filteredItems = sectionData?.itemCards?.filter((item) => {
+                const itemName =
+                    item?.card?.info?.name?.toLowerCase() || "";
+
+                const searchRegex = new RegExp(
+                    `\\b${searchText.toLowerCase()}\\b`
+                );
+
+                return searchRegex.test(itemName);
+            });
+
+            return {
+                ...section,
+                card: {
+                    ...section.card,
+                    card: {
+                        ...sectionData,
+                        itemCards: filteredItems
+                    }
+                }
+            };
+        })
+        .filter(
+            (section) =>
+                section?.card?.card?.itemCards?.length > 0
+        );
 
     return (
         <div className="restaurant-details">
-
             <div className="restaurant-header">
                 <h1>{name}</h1>
 
@@ -70,9 +74,16 @@ const RestaurantDetails = () => {
                     src={RESTO_DETAILS_IMG + cloudinaryImageId}
                     alt={name}
                 />
+
                 <div className="restaurant-info">
-                    <span>⭐ {Number(avgRating).toFixed(1)} ({totalRatingsString})</span>
+                    <span>
+                        ⭐ {Number(avgRating).toFixed(1)} (
+                        {totalRatingsString}
+                        )
+                    </span>
+
                     <span>•</span>
+
                     <span>{costForTwoMessage}</span>
                 </div>
 
@@ -81,65 +92,59 @@ const RestaurantDetails = () => {
                 <div className="delivery-info">
                     <div>
                         <strong>Outlet</strong>
-                        <span>{locality} / {areaName}</span>
+                        <span>
+                            {locality} / {areaName}
+                        </span>
                     </div>
 
                     <div>
                         <strong>Delivery</strong>
-                        <span>{restaurantDetails?.info?.sla?.deliveryTime} mins</span>
+                        <span>
+                            {restaurantDetails?.info?.sla?.deliveryTime} mins
+                        </span>
                     </div>
                 </div>
+
                 <hr />
+
                 <div>
-                    <input type="search" className="search-container" placeholder=" Search items" onChange={(event) => {
-                        const value = event.target.value.toLowerCase();
-                        const filteredSections = menuSections.map((section) => {
-                            const sectionData = section?.card?.card;
-                            const filteredItems = sectionData?.itemCards?.filter((item) =>
-                                    item?.card?.info?.name?.toLowerCase().includes(value));
-
-                                return {
-                                    ...section,
-                                    card: {
-                                        ...section.card,
-                                        card: {
-                                            ...sectionData,
-                                            itemCards: filteredItems
-                                        }
-                                    }
-                                };
-                            })
-                            .filter(
-                                (section) =>
-                                    section?.card?.card?.itemCards?.length > 0
-                            );
-
-                        setSearchItems(filteredSections);
-                    }}></input>
+                    <input
+                        type="search"
+                        className="search-container"
+                        placeholder="Search items"
+                        value={searchText}
+                        onChange={(event) => {
+                            setSearchText(event.target.value);
+                        }}
+                    />
                 </div>
+
                 <div className="menu-items">
-                    
-                        {searchItems.map((section) => {
-                            const sectionData = section?.card?.card;
-                            return (
-                                <div className="menu-section" key={sectionData?.title}>
-                                    <h3>{sectionData?.title}</h3>
-                                    <div className="menu-list">
-                                        {sectionData?.itemCards?.map((item) => {
-                                            return (
-                                                <Menulist key={item?.card?.info?.id} itemData={item} />
-                                            );
-                                        })}
-                                    </div>
+                    {filteredSections.map((section) => {
+                        const sectionData = section?.card?.card;
+
+                        return (
+                            <div
+                                className="menu-section"
+                                key={sectionData?.title}
+                            >
+                                <h3>{sectionData?.title}</h3>
+
+                                <div className="menu-list">
+                                    {sectionData?.itemCards?.map((item) => (
+                                        <Menulist
+                                            key={item?.card?.info?.id}
+                                            itemData={item}
+                                        />
+                                    ))}
                                 </div>
-                            );
-                        })}
-                    
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
-
         </div>
     );
-}
+};
 
 export default RestaurantDetails;

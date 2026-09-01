@@ -7,6 +7,7 @@ import Error from "./components/error";
 import Cart from "./components/cart";
 import Contact from "./components/contact";
 import RestaurantDetails from "./components/Restuarantdetails";
+import AboutClass from "./components/AboutClass";
 import { createBrowserRouter, RouterProvider, Outlet} from "react-router-dom";
 
 const AppLayout = () => 
@@ -30,7 +31,8 @@ const router = createBrowserRouter([
             },
             {
                 path: "/about",
-                element: <Aboutus />
+                //element: <Aboutus />
+                element: <AboutClass name = {"Thanujashree"} location = {"Bengaluru"} />
             },
             {
                 path: "/contact",
